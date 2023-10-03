@@ -177,7 +177,7 @@ impl TaskManager {
     }
 
     pub async fn add_submissions(&mut self, submission: Submission) {
-        let testcase = self.list_testcase(submission.id).await;
+        let testcase = self.list_testcase(submission.problem_no).await;
 
         let judge = JudgeInfo::new(submission, testcase);
 
@@ -200,6 +200,8 @@ impl TaskManager {
     }
 
     pub fn force_rejudge(&mut self, submission: Submission, testcase: TestCase) {
+        println!("task quick queue: {:?}", self.task_quick);
+
         // 이미 큐에 있으면 패스함
         match testcase.is_public {
             false => {
@@ -223,6 +225,8 @@ impl TaskManager {
                 self.task_quick.insert(0, (submission, testcase))
             }
         }
+
+        println!("--> task quick queue {:?}", self.task_quick);
     }
 
     pub async fn process(&mut self) {
@@ -259,7 +263,7 @@ impl TaskManager {
                 }
             }
             JudgeAction::End(result, msg, runtime, memory) => {
-                db::update_submission_end(submission.id, result, msg, memory, runtime).await;
+                db::update_submission_end(submission, result, msg, memory, runtime).await;
 
                 return false;
             }
@@ -270,8 +274,10 @@ impl TaskManager {
         true
     }
 
-    async fn list_testcase(&mut self, submission_id: i32) -> Vec<TestCase> {
-        if let Some((fetch_time, testcase)) = self.testcase_cache.get(&submission_id) {
+    async fn list_testcase(&mut self, problem_no: i32) -> Vec<TestCase> {
+        println!("testcase cache {:?}", self.testcase_cache);
+
+        if let Some((fetch_time, testcase)) = self.testcase_cache.get(&problem_no) {
             if let Ok(is_cache_expired) = fetch_time.elapsed().map(|t| t.as_secs() < 5) {
                 if !is_cache_expired {
                     return testcase.clone();
@@ -279,9 +285,9 @@ impl TaskManager {
             }
         };
 
-        let testcases = db::list_testcase(submission_id).await;
+        let testcases = db::list_testcase(problem_no).await;
         self.testcase_cache.insert(
-            submission_id,
+            problem_no,
             (std::time::SystemTime::now(), testcases.clone()),
         );
 

@@ -10,3 +10,4 @@ tokio = { version = "*", features = ['full']}
 mysql_async = "*"
 bytes = "*"
 rand = "*"
+chrono = "*"

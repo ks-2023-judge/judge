@@ -92,6 +92,9 @@ async fn main() {
                 }
             }
             _ = interval.tick() => { // 0.1초마다 큐 채우기
+                println!("** last task manager {:?}", task_manager.task_quick);
+
+
                 // early-return 상황이 있을수 있어서 우선 검사
                 task_manager.process().await;
 
@@ -102,22 +105,21 @@ async fn main() {
                 }
 
                 let (mut task_precise, mut task_quick) = db::list_submissions(available_precise.len(), available_quick.len()).await;
-                if task_precise.is_empty() && task_quick.is_empty() {
-                    continue;
+                if (task_precise.len() + task_quick.len()) > 0 {
+                    let mut queued_mark: Vec<i32> = Vec::with_capacity(available_precise.len() + available_quick.len());
+                    for task in task_precise.drain(..) {
+                        queued_mark.push(task.id);
+                        task_manager.add_submissions(task).await;
+                    }
+                    for task in task_quick.drain(..) {
+                        queued_mark.push(task.id);
+                        task_manager.add_submissions(task).await;
+                    }
+
+                    db::mark_submission_queued(queued_mark).await;
                 }
 
                 // starving이 생기지 않도록 두개 다 들고오는 처리
-                let mut queued_mark: Vec<i32> = Vec::with_capacity(available_precise.len() + available_quick.len());
-                for task in task_precise.drain(..) {
-                    queued_mark.push(task.id);
-                    task_manager.add_submissions(task).await;
-                }
-                for task in task_quick.drain(..) {
-                    queued_mark.push(task.id);
-                    task_manager.add_submissions(task).await;
-                }
-
-                db::mark_submission_queued(queued_mark).await;
 
                 task_manager.process().await;
 
@@ -153,6 +155,7 @@ async fn main() {
                     }
                 }
 
+                println!("redo quick {:?}", redo_quick);
                 redo_precise.drain(..).for_each(|(submission, testcase)| task_manager.force_rejudge(submission, testcase));
                 redo_quick.drain(..).for_each(|(submission, testcase)| task_manager.force_rejudge(submission, testcase));
             }

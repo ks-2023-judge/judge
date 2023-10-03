@@ -214,7 +214,8 @@ impl Stream {
                     Some(msg.output_compile),
                     msg.judge_server_id,
                 );
-                let result_inner = TestCaseJudgeResultInner::WrongAnswer;
+
+                let result_inner = msg.result;
 
                 self.tx_manager
                     .send(ChannelMessage::WorkDone(

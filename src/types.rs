@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use mysql_async::{from_value_opt, FromValueError, Value};
 use mysql_async::{prelude::*, Row};
 
@@ -34,8 +35,9 @@ pub struct Submission {
     pub state: SubmissionState,
     pub extra: Option<String>,
     pub result: Option<SubmissionResult>,
-    pub runtime: i32,
-    pub memory: i32,
+    pub submit_at: NaiveDateTime,
+    pub runtime: Option<i32>,
+    pub memory: Option<i32>,
     pub score: Option<u32>,
 }
 impl Submission {
@@ -62,6 +64,10 @@ impl TryFrom<Row> for Submission {
             state: row.get("state").ok_or(())?,
             extra: row.get("extra").ok_or(())?,
             result: row.get("result").ok_or(())?,
+            submit_at: row
+                .get("submit_at")
+                .and_then(|v: String| NaiveDateTime::parse_from_str(&v, "%Y-%m-%d %H:%M:%S").ok())
+                .ok_or(())?,
             runtime: row.get("runtime").ok_or(())?,
             memory: row.get("memory").ok_or(())?,
             score: row.get("score").ok_or(())?,
@@ -308,6 +314,7 @@ pub enum TestCaseJudgeResultInner {
     WrongAnswer,
     OutputLimitExceeded,
     CompileFailed,
+    RuntimeError,
 }
 impl ToString for TestCaseJudgeResultInner {
     fn to_string(&self) -> String {
@@ -319,6 +326,7 @@ impl ToString for TestCaseJudgeResultInner {
             Self::MemoryLimitExceeded => "메모리 초과".to_string(),
             Self::OutputLimitExceeded => "출력 초과".to_string(),
             Self::CompileFailed => "컴파일 실패".to_string(),
+            Self::RuntimeError => "런타임 오류".to_string(),
         }
     }
 }
@@ -332,6 +340,7 @@ impl From<TestCaseJudgeResultInner> for String {
             TestCaseJudgeResultInner::MemoryLimitExceeded => "MemoryLimitExceeded".to_string(),
             TestCaseJudgeResultInner::OutputLimitExceeded => "OutputLimitExceeded".to_string(),
             TestCaseJudgeResultInner::CompileFailed => "CompileFailed".to_string(),
+            TestCaseJudgeResultInner::RuntimeError => "RunTimeError".to_string(),
         }
     }
 }
@@ -345,6 +354,7 @@ impl From<String> for TestCaseJudgeResultInner {
             "MemoryLimitExceeded" => TestCaseJudgeResultInner::MemoryLimitExceeded,
             "OutputLimitExceeded" => TestCaseJudgeResultInner::OutputLimitExceeded,
             "CompileFailed" => TestCaseJudgeResultInner::CompileFailed,
+            "RunTimeError" => TestCaseJudgeResultInner::RuntimeError,
             _ => panic!("Invalid TestCaseJudgeResultInner"),
         }
     }

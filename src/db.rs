@@ -53,22 +53,47 @@ pub async fn update_submission_start(id: i32) {
 }
 
 pub async fn update_submission_end(
-    id: i32,
+    submission: &Submission,
     result: bool,
     extra: String,
     memory: usize,
     runtime: usize,
 ) {
+    println!("update_submission");
+
+    let submit_at = submission.submit_at.format("%Y-%m-%d %T");
+    let score = query(&format!("
+    SELECT 
+        count(*) as tries,
+        (SELECT TIMESTAMPDIFF(SECOND, STR_TO_DATE('{}', '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(val, '%Y-%m-%d %H:%i:%s')) FROM config WHERE `key` = 'START_AT') as sec_diff
+    FROM Submit WHERE stud_id = {} AND type = 1 AND problemNo = {} AND result = 0
+    AND (id < (SELECT min(`id`) FROM Submit WHERE stud_id = {} AND type = 1 AND problemNo = {} AND result = 1))
+    ", 
+        submit_at, 
+        submission.stud_id, submission.problem_no, submission.stud_id, submission.problem_no)
+    ).await.pop().unwrap();
+
+    let retries: usize = score.get("tries").unwrap_or(0);
+    let secs: usize = score.get("sec_diff").unwrap_or(0);
+    let score = if result {
+        retries * 20 + (secs / 60)
+    } else {
+        0
+    };
+
     query(&format!(
-            "UPDATE Submit SET result = {}, extra = '{}', memory = {}, runtime = {}, state = 2 WHERE id = {}",
+            "UPDATE Submit SET score = {}, result = {}, extra = '{}', memory = {}, runtime = {}, state = 2 WHERE id = {}",
+            score,
             result,
             extra,
             memory,
             runtime,
-            id
+            submission.id
         )
     )
     .await;
+
+    update_user_problem_stat(submission.stud_id, submission.problem_no, score).await;
 }
 
 pub async fn mark_submission_queued(ids: Vec<i32>) {
@@ -140,18 +165,31 @@ async fn update_submission_state(id: i32, state: SubmissionState) {
     .await;
 }
 
+async fn update_user_problem_stat(stud_id: i32, problem_no: i32, score: usize) {
+    query(&format!(
+        "UPDATE user_problem_stat SET score = {} WHERE stud_id = {} AND problem_no = {}",
+        score, stud_id, problem_no
+    )).await;
+}
+
 async fn query(sql: &str) -> Vec<Row> {
     let url = "mysql://ksu:Rhdqngofk5140%21%40%23@100.82.35.142:3306/ksjudge";
     let pool = mysql_async::Pool::new(url);
     let mut conn = pool.get_conn().await.unwrap();
 
     println!("query = {}", sql);
-    conn.query(sql).await.unwrap()
+    match conn.query(sql).await {
+        Err(e) => { eprintln!("error while query: {:?}", e); Vec::new()},
+        Ok(val) => {
+            println!("result {:?}", val);
+            val
+        }
+    }
 }
 async fn prepared_query(sql: &str, params: mysql_async::Params) {
     let url = "mysql://ksu:Rhdqngofk5140%21%40%23@100.82.35.142:3306/ksjudge";
     let pool = mysql_async::Pool::new(url);
-    let mut conn = pool.get_conn().await.unwrap();
+    let mut conn = pool.get_conn().await.unwrap(); 
 
     sql.with([params]).batch(&mut conn).await;
 }
