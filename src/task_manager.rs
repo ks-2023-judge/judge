@@ -96,7 +96,7 @@ impl JudgeInfo {
                     .testcase_result
                     .iter()
                     .filter(|(k, _)| testcase_ids.contains(k))
-                    .map(|(_, v)| v.0.runtime.unwrap_or(0))
+                    .map(|(_, v)| v.0.memory.unwrap_or(0))
                     .max()
                     .unwrap_or(0);
 
@@ -136,7 +136,7 @@ impl JudgeInfo {
                 let max_memory = self
                     .testcase_result
                     .values()
-                    .map(|v| v.0.runtime.unwrap_or(0))
+                    .map(|v| v.0.memory.unwrap_or(0))
                     .max()
                     .unwrap_or(0);
 
