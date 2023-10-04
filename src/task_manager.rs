@@ -279,6 +279,7 @@ impl TaskManager {
 
         if let Some((fetch_time, testcase)) = self.testcase_cache.get(&problem_no) {
             if let Ok(is_cache_expired) = fetch_time.elapsed().map(|t| t.as_secs() < 5) {
+                println!("is elapsed");
                 if !is_cache_expired {
                     return testcase.clone();
                 }

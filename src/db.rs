@@ -65,7 +65,7 @@ pub async fn update_submission_end(
     let score = query(&format!("
     SELECT 
         count(*) as tries,
-        (SELECT TIMESTAMPDIFF(SECOND, STR_TO_DATE('{}', '%Y-%m-%d %H:%i:%s'), STR_TO_DATE(val, '%Y-%m-%d %H:%i:%s')) FROM config WHERE `key` = 'START_AT') as sec_diff
+        (SELECT TIMESTAMPDIFF(SECOND, STR_TO_DATE(val, '%Y-%m-%d %H:%i:%s'), STR_TO_DATE('{}', '%Y-%m-%d %H:%i:%s')) FROM config WHERE `key` = 'START_AT') as sec_diff
     FROM Submit WHERE stud_id = {} AND type = 1 AND problemNo = {} AND result = 0
     AND (id < (SELECT min(`id`) FROM Submit WHERE stud_id = {} AND type = 1 AND problemNo = {} AND result = 1))
     ", 
@@ -84,7 +84,7 @@ pub async fn update_submission_end(
     query(&format!(
             "UPDATE Submit SET score = {}, result = {}, extra = '{}', memory = {}, runtime = {}, state = 2 WHERE id = {}",
             score,
-            result,
+            if result { 0 } else { 1 },
             extra,
             memory,
             runtime,
@@ -149,7 +149,7 @@ pub async fn insert_testcase_judge(
             "testcase_id" => testcase_id,
             "output" => result.output.clone(),
             "runtime" => result.runtime,
-            "result" => if result.result { 1 } else { 0 },
+            "result" => if result.result { 0 } else { 1 },
             "compile_log" => result.compile_log.clone().unwrap_or("".to_string()),
             "memory" => result.memory.unwrap_or(0) as i64,
             "judge_server_id" => result.judge_server_id.clone()

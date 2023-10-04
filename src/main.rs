@@ -36,8 +36,15 @@ struct Channel {
 type TX = tokio::sync::mpsc::Sender<ChannelMessage>;
 type RX = tokio::sync::mpsc::Receiver<ChannelMessage>;
 
-#[tokio::main]
-async fn main() {
+fn main() {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+
+    rt.block_on(main_async());
+}
+async fn main_async() {
     let mut interval = tokio::time::interval(std::time::Duration::from_millis(1000));
 
     let mut channels: Vec<Channel> = vec![];
@@ -143,7 +150,7 @@ async fn main() {
                     }
                 }
                 while let Some(task) = task_manager.task_quick.pop() {
-                    if let Some(channel) = available_quick.pop() {
+                    if let Some(channel) = available_quick.pop().or(available_precise.pop()) {
                         channel.is_working = true;
 
                         if (channel.tx.send(ChannelMessage::WorkStart(task.0.clone(), task.1.clone())).await).is_err() {
