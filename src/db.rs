@@ -125,6 +125,7 @@ CREATE TABLE `Testcase_judge` (
   `memory` int DEFAULT NULL,
   `judge_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `judge_server_id` int NOT NULL DEFAULT '-1',
+  `result_extra` varchar(128),
   PRIMARY KEY (`id`),
   KEY `Testcase_judge_FK` (`submit_id`) USING BTREE,
   KEY `Testcase_judge_testcase_FK` (`testcase_id`),
@@ -143,7 +144,7 @@ pub async fn insert_testcase_judge(
         submission_id, testcase_id, result_inner
     );
     prepared_query(
-        "INSERT INTO Testcase_judge (submit_id, testcase_id, output, runtime, result, compile_log, memory, judge_server_id) VALUES (:submit_id, :testcase_id, :output, :runtime, :result, :compile_log, :memory, :judge_server_id)",
+        "INSERT INTO Testcase_judge (submit_id, testcase_id, output, runtime, result, compile_log, memory, judge_server_id) VALUES (:submit_id, :testcase_id, :output, :runtime, :result, :compile_log, :memory, :judge_server_id, :result_extra)",
         params!{
             "submit_id" => submission_id,
             "testcase_id" => testcase_id,
@@ -152,7 +153,8 @@ pub async fn insert_testcase_judge(
             "result" => if result.result { 0 } else { 1 },
             "compile_log" => result.compile_log.clone().unwrap_or("".to_string()),
             "memory" => result.memory.unwrap_or(0) as i64,
-            "judge_server_id" => result.judge_server_id.clone()
+            "judge_server_id" => result.judge_server_id.clone(),
+            "result_extra" => result_inner.to_string(),
         }
     ).await;
 }
