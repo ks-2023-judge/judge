@@ -144,7 +144,7 @@ pub async fn insert_testcase_judge(
         submission_id, testcase_id, result_inner
     );
     prepared_query(
-        "INSERT INTO Testcase_judge (submit_id, testcase_id, output, runtime, result, compile_log, memory, judge_server_id) VALUES (:submit_id, :testcase_id, :output, :runtime, :result, :compile_log, :memory, :judge_server_id, :result_extra)",
+        "INSERT INTO Testcase_judge (submit_id, testcase_id, output, runtime, result, compile_log, memory, judge_server_id, result_extra) VALUES (:submit_id, :testcase_id, :output, :runtime, :result, :compile_log, :memory, :judge_server_id, :result_extra)",
         params!{
             "submit_id" => submission_id,
             "testcase_id" => testcase_id,
@@ -193,5 +193,10 @@ async fn prepared_query(sql: &str, params: mysql_async::Params) {
     let pool = mysql_async::Pool::new(url);
     let mut conn = pool.get_conn().await.unwrap(); 
 
-    sql.with([params]).batch(&mut conn).await;
+    match sql.with([params]).batch(&mut conn).await {
+        Err(e) => { eprintln!("error while prepared query: {:?}", e); },
+        Ok(val) => {
+            println!("result {:?}", val);
+        }
+    }
 }

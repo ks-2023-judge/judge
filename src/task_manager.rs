@@ -118,6 +118,12 @@ impl JudgeInfo {
                 }
             }
             (JudgeState::InPrivate, SubmissionType::Precise) => {
+                if self.testcase_result.len()
+                    < self.testcase_public.len() + self.testcase_private.len()
+                {
+                    return JudgeAction::NoOp;
+                }
+
                 self.state = JudgeState::Done;
                 let _result = self.testcase_private_passed.clone();
 
