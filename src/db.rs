@@ -59,7 +59,7 @@ pub async fn update_submission_end(
     memory: usize,
     runtime: usize,
 ) {
-    println!("update_submission");
+  // println!("update_submission");
 
     let submit_at = submission.submit_at.format("%Y-%m-%d %T");
     let score = query(&format!("
@@ -139,10 +139,10 @@ pub async fn insert_testcase_judge(
     result: &TestCaseJudgeResult,
     result_inner: &TestCaseJudgeResultInner,
 ) {
-    println!(
-        "* insert testcase judge: {} {} {:?}",
-        submission_id, testcase_id, result_inner
-    );
+  // println!(
+        // "* insert testcase judge: {} {} {:?}",
+    //     submission_id, testcase_id, result_inner
+    // );
     prepared_query(
         "INSERT INTO Testcase_judge (submit_id, testcase_id, output, runtime, result, compile_log, memory, judge_server_id, result_extra) VALUES (:submit_id, :testcase_id, :output, :runtime, :result, :compile_log, :memory, :judge_server_id, :result_extra)",
         params!{
@@ -179,11 +179,11 @@ async fn query(sql: &str) -> Vec<Row> {
     let pool = mysql_async::Pool::new(url);
     let mut conn = pool.get_conn().await.unwrap();
 
-    println!("query = {}", sql);
+  // println!("query = {}", sql);
     match conn.query(sql).await {
         Err(e) => { eprintln!("error while query: {:?}", e); Vec::new()},
         Ok(val) => {
-            println!("result {:?}", val);
+          // println!("result {:?}", val);
             val
         }
     }
@@ -195,8 +195,8 @@ async fn prepared_query(sql: &str, params: mysql_async::Params) {
 
     match sql.with([params]).batch(&mut conn).await {
         Err(e) => { eprintln!("error while prepared query: {:?}", e); },
-        Ok(val) => {
-            println!("result {:?}", val);
+        Ok(_val) => {
+          // println!("result {:?}", val);
         }
     }
 }

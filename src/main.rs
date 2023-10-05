@@ -99,7 +99,7 @@ async fn main_async() {
                 }
             }
             _ = interval.tick() => { // 0.1초마다 큐 채우기
-                println!("** last task manager {:?}", task_manager.task_quick);
+              // println!("** last task manager {:?}", task_manager.task_quick);
 
 
                 // early-return 상황이 있을수 있어서 우선 검사
@@ -162,7 +162,7 @@ async fn main_async() {
                     }
                 }
 
-                println!("redo quick {:?}", redo_quick);
+              // println!("redo quick {:?}", redo_quick);
                 redo_precise.drain(..).for_each(|(submission, testcase)| task_manager.force_rejudge(submission, testcase));
                 redo_quick.drain(..).for_each(|(submission, testcase)| task_manager.force_rejudge(submission, testcase));
             }

@@ -65,7 +65,7 @@ impl Stream {
         let (stream_tx, mut stream_rx) = tokio::sync::mpsc::channel::<ChannelMessage>(256);
 
         let msg = self.recv().await;
-        println!("handshake {:?}", msg);
+        // println!("handshake {:?}", msg);
 
         if let Ok(Message::Register(msg)) = msg {
             self.tx_manager
@@ -84,7 +84,7 @@ impl Stream {
 
         self.judge(stream_rx).await;
 
-        println!("listner loop end - {:?}", self);
+        // println!("listner loop end - {:?}", self);
 
         drop(
             self.tx_manager
@@ -135,7 +135,12 @@ impl Stream {
                             let body: MessageBody = msg.into();
                             body.encode(&mut self.send_buf);
 
-                            self.stream.write_buf(&mut self.send_buf).await.unwrap();
+                            while let Ok(len) = self.stream.write_buf(&mut self.send_buf).await {
+                                if self.send_buf.is_empty() { break; }
+
+                                if len == 0 { break; }
+                            }
+
                             self.start_dt = Some(std::time::Instant::now());
                         }
                         _ => {
@@ -201,7 +206,7 @@ impl Stream {
                     .unwrap();
             }
             Message::ResultFailed(msg) => {
-                println!("- msg failed {:?}, {:?}", msg, self);
+                // println!("- msg failed {:?}, {:?}", msg, self);
 
                 let msg = msg.0;
                 let result = TestCaseJudgeResult::new(

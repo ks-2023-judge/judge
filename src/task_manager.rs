@@ -57,7 +57,7 @@ impl JudgeInfo {
     }
 
     pub fn process(&mut self) -> JudgeAction {
-        println!("** process");
+        // println!("** process");
 
         match (&self.state, self.submission.run_type) {
             (JudgeState::Inqueue, _) => {
@@ -67,11 +67,11 @@ impl JudgeInfo {
                 JudgeAction::AddQuickTestcase(is_priority, self.testcase_public.clone())
             }
             (JudgeState::InPublic, _) => {
-                println!(
-                    "-- {:?} / {:?}",
-                    self.testcase_result.len(),
-                    self.testcase_public.len()
-                );
+                //   // println!(
+                //         "-- {:?} / {:?}",
+                //         self.testcase_result.len(),
+                //         self.testcase_public.len()
+                //     );
                 if self.testcase_result.len() < self.testcase_public.len() {
                     return JudgeAction::NoOp;
                 }
@@ -206,7 +206,7 @@ impl TaskManager {
     }
 
     pub fn force_rejudge(&mut self, submission: Submission, testcase: TestCase) {
-        println!("task quick queue: {:?}", self.task_quick);
+        // println!("task quick queue: {:?}", self.task_quick);
 
         // 이미 큐에 있으면 패스함
         match testcase.is_public {
@@ -232,7 +232,7 @@ impl TaskManager {
             }
         }
 
-        println!("--> task quick queue {:?}", self.task_quick);
+        // println!("--> task quick queue {:?}", self.task_quick);
     }
 
     pub async fn process(&mut self) {
@@ -281,11 +281,11 @@ impl TaskManager {
     }
 
     async fn list_testcase(&mut self, problem_no: i32) -> Vec<TestCase> {
-        println!("testcase cache {:?}", self.testcase_cache);
+        // println!("testcase cache {:?}", self.testcase_cache);
 
         if let Some((fetch_time, testcase)) = self.testcase_cache.get(&problem_no) {
             if let Ok(is_cache_expired) = fetch_time.elapsed().map(|t| t.as_secs() < 5) {
-                println!("is elapsed");
+                // println!("is elapsed");
                 if !is_cache_expired {
                     return testcase.clone();
                 }
