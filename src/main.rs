@@ -58,7 +58,7 @@ async fn main_async() {
     loop {
         tokio::select! {
             Some(rx_msg) = rx.recv() => {
-                eprintln!("Received message: {:?}", rx_msg);
+              // eprintln!("Received message: {:?}", rx_msg);
                 match rx_msg {
                     ChannelMessage::NewChannel(tx, is_precise_measurement) => {
                         tx.send(ChannelMessage::SetChannelId(channel_id)).await.unwrap();

@@ -76,7 +76,7 @@ impl Stream {
             return;
         }
 
-        eprintln!("ack completed");
+        // eprintln!("ack completed");
 
         if let ChannelMessage::SetChannelId(id) = stream_rx.recv().await.unwrap() {
             self.stream_id = id;
@@ -103,7 +103,7 @@ impl Stream {
         loop {
             tokio::select!(
                 msg = stream_rx.recv() => {
-                    eprintln!("recv on listener {:?}", msg);
+                    // eprintln!("recv on listener {:?}", msg);
                     match msg {
                         Some(ChannelMessage::WorkStart(submission, test_case)) => {
                             if self.current_submission.is_some() {
@@ -252,7 +252,7 @@ impl Stream {
             }
 
             if let Some(msg) = MessageBody::decode_buf(&mut self.recv_buf) {
-                eprintln!("recv: {:?}", msg);
+                // eprintln!("recv: {:?}", msg);
                 return msg.try_into();
             }
         }

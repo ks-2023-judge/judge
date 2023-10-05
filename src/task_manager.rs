@@ -187,7 +187,7 @@ impl TaskManager {
 
         let judge = JudgeInfo::new(submission, testcase);
 
-        eprintln!("add test {:?}", judge);
+        // eprintln!("add test {:?}", judge);
         self.submissions.insert(judge.submission.id, judge);
     }
     pub async fn add_result(
