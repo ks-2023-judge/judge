@@ -181,6 +181,7 @@ impl TaskManager {
     pub async fn add_submissions(&mut self, submission: Submission) {
         let testcase = self.list_testcase(submission.problem_no).await;
 
+        println!("testcase {} -> {:?}", submission.id, testcase);
         let judge = JudgeInfo::new(submission, testcase);
 
         // eprintln!("add test {:?}", judge);

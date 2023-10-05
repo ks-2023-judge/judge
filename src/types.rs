@@ -163,6 +163,7 @@ pub enum SubmissionLanguage {
     Python,
     Rust,
     Javascript,
+    Kotlin,
 }
 impl TryFrom<Value> for SubmissionLanguage {
     type Error = FromValueError;
@@ -177,6 +178,7 @@ impl TryFrom<Value> for SubmissionLanguage {
             "python" => Ok(SubmissionLanguage::Python),
             "rust" => Ok(SubmissionLanguage::Rust),
             "javascript" => Ok(SubmissionLanguage::Javascript),
+            "kotlin" => Ok(SubmissionLanguage::Kotlin),
             _ => Err(FromValueError(value)),
         }
     }
@@ -195,6 +197,7 @@ impl TryFrom<String> for SubmissionLanguage {
             "python" => Ok(SubmissionLanguage::Python),
             "rust" => Ok(SubmissionLanguage::Rust),
             "javascript" => Ok(SubmissionLanguage::Javascript),
+            "kotlin" => Ok(SubmissionLanguage::Kotlin),
             _ => Err(()),
         }
     }
@@ -208,6 +211,7 @@ impl From<SubmissionLanguage> for String {
             SubmissionLanguage::Python => "python".to_string(),
             SubmissionLanguage::Rust => "rust".to_string(),
             SubmissionLanguage::Javascript => "javascript".to_string(),
+            SubmissionLanguage::Kotlin => "kotlin".to_string(),
         }
     }
 }
@@ -234,7 +238,7 @@ pub struct TestCase {
     pub is_public: bool,
     pub runtime: Option<usize>,
     pub memory_limit: Option<usize>,
-    pub is_decimal_mode: bool,
+    pub is_decimal_mode: i32,
 }
 impl TryFrom<Row> for TestCase {
     type Error = ();
