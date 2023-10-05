@@ -93,7 +93,7 @@ pub async fn update_submission_end(
     )
     .await;
 
-    update_user_problem_stat(submission.stud_id, submission.problem_no, score).await;
+    // update_user_problem_stat(submission.stud_id, submission.problem_no, score).await;
 }
 
 pub async fn mark_submission_queued(ids: Vec<i32>) {
