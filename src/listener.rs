@@ -127,9 +127,10 @@ impl Stream {
                                     input: test_case.input,
                                     expect_output: test_case.output,
 
-
                                     time_limit: test_case.runtime.unwrap_or(15) as u64,
                                     memory_limit: test_case.memory_limit.unwrap_or(1_000_000_000) as u64,
+
+                                    is_decimal_mode: test_case.is_decimal_mode,
                             });
 
                             let body: MessageBody = msg.into();

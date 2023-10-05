@@ -166,8 +166,6 @@ pub struct TaskManager {
     pub task_quick: Vec<(Submission, TestCase)>,
 
     submissions: HashMap<i32, JudgeInfo>,
-
-    testcase_cache: HashMap<i32, (std::time::SystemTime, Vec<TestCase>)>,
 }
 
 impl TaskManager {
@@ -177,8 +175,6 @@ impl TaskManager {
             task_quick: Vec::with_capacity(128),
 
             submissions: HashMap::<i32, JudgeInfo>::new(),
-
-            testcase_cache: HashMap::new(),
         }
     }
 
@@ -281,23 +277,6 @@ impl TaskManager {
     }
 
     async fn list_testcase(&mut self, problem_no: i32) -> Vec<TestCase> {
-        // println!("testcase cache {:?}", self.testcase_cache);
-
-        if let Some((fetch_time, testcase)) = self.testcase_cache.get(&problem_no) {
-            if let Ok(is_cache_expired) = fetch_time.elapsed().map(|t| t.as_secs() < 5) {
-                // println!("is elapsed");
-                if !is_cache_expired {
-                    return testcase.clone();
-                }
-            }
-        };
-
-        let testcases = db::list_testcase(problem_no).await;
-        self.testcase_cache.insert(
-            problem_no,
-            (std::time::SystemTime::now(), testcases.clone()),
-        );
-
-        testcases
+        db::list_testcase(problem_no).await
     }
 }

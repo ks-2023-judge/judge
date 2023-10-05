@@ -349,6 +349,8 @@ pub struct MsgSetTask {
 
     pub time_limit: u64,
     pub memory_limit: u64,
+
+    pub is_decimal_mode: bool,
 }
 impl From<MsgSetTask> for MessageBody {
     fn from(val: MsgSetTask) -> Self {
@@ -361,6 +363,7 @@ impl From<MsgSetTask> for MessageBody {
             MessageData::String(val.expect_output),
             MessageData::UInteger(val.time_limit),
             MessageData::UInteger(val.memory_limit),
+            MessageData::Boolean(val.is_decimal_mode),
         ]);
         Self {
             len: 8 + 4 + data.calc_byte_size(),
@@ -373,7 +376,7 @@ impl TryFrom<MessageBody> for MsgSetTask {
     type Error = ();
 
     fn try_from(msg: MessageBody) -> Result<MsgSetTask, ()> {
-        if msg.len < 8 + 4 + 8 + 8 + 4 + 4 + 4 + 4 + 4 {
+        if msg.len < 8 + 4 + 8 + 8 + 4 + 4 + 4 + 4 + 4 + 4 {
             return Err(());
         }
 
@@ -431,6 +434,12 @@ impl TryFrom<MessageBody> for MsgSetTask {
                     return Err(());
                 };
 
+                let is_decimal_mode = if let MessageData::Boolean(b) = data[8] {
+                    b
+                } else {
+                    return Err(());
+                };
+
                 Ok(MsgSetTask {
                     submission_id,
                     testcase_id,
@@ -440,6 +449,7 @@ impl TryFrom<MessageBody> for MsgSetTask {
                     expect_output,
                     time_limit,
                     memory_limit,
+                    is_decimal_mode,
                 })
             }
             _ => Err(()),

@@ -234,6 +234,7 @@ pub struct TestCase {
     pub is_public: bool,
     pub runtime: Option<usize>,
     pub memory_limit: Option<usize>,
+    pub is_decimal_mode: bool,
 }
 impl TryFrom<Row> for TestCase {
     type Error = ();
@@ -247,6 +248,7 @@ impl TryFrom<Row> for TestCase {
             is_public: row.get("isPublic").ok_or(())?,
             runtime: row.get("runtime").ok_or(())?,
             memory_limit: row.get("memory_limit").ok_or(())?,
+            is_decimal_mode: row.get("is_decimal_mode").ok_or(())?,
         })
     }
 }
