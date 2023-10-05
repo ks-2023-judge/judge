@@ -111,7 +111,7 @@ async fn main_async() {
                     continue;
                 }
 
-                let (mut task_precise, mut task_quick) = db::list_submissions(available_precise.len().min(8), available_quick.len().min(8)).await;
+                let (mut task_precise, mut task_quick) = db::list_submissions(available_precise.len().max(8), available_quick.len().max(8)).await;
                 if (task_precise.len() + task_quick.len()) > 0 {
                     let mut queued_mark: Vec<i32> = Vec::with_capacity(available_precise.len() + available_quick.len());
                     for task in task_precise.drain(..) {
